@@ -7,34 +7,29 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install WDK
+    - name: Install WDK via winget
       run: |
-        choco install windows-driver-kit --yes
+        $wdkUrl = "https://go.microsoft.com/fwlink/?linkid=2196230"
+        $wdkPath = "$env:TEMP\wdksetup.exe"
+        Invoke-WebRequest -Uri $wdkUrl -OutFile $wdkPath
+        Start-Process -FilePath $wdkPath -ArgumentList "/quiet /norestart" -Wait
       shell: powershell
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Create Driver Project
-      run: |
-        mkdir driver_project
-        copy hypervisor.c driver_project\
-        copy driver_entry.c driver_project\
-        copy vmlaunch_stub.asm driver_project\
-      shell: cmd
-
     - name: Build Driver
       run: |
-        msbuild driver_project\nvvad86v.vcxproj /p:Configuration=Release /p:Platform=x64
+        msbuild nvvad86v.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0
       shell: cmd
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: nvvad86v
-        path: driver_project\x64\Release\nvvad86v.sys
+        name: nvvad86v_sys
+        path: x64\Release\nvvad86v.sys
