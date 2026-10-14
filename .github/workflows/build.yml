@@ -12,20 +12,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install WDK via winget
-      run: |
-        $wdkUrl = "https://go.microsoft.com/fwlink/?linkid=2196230"
-        $wdkPath = "$env:TEMP\wdksetup.exe"
-        Invoke-WebRequest -Uri $wdkUrl -OutFile $wdkPath
-        Start-Process -FilePath $wdkPath -ArgumentList "/quiet /norestart" -Wait
-      shell: powershell
-
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
+    - name: Install WDK
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2196230" -OutFile "$env:TEMP\wdksetup.exe"
+        Start-Process -FilePath "$env:TEMP\wdksetup.exe" -ArgumentList "/features + /quiet /norestart" -Wait
+        Write-Host "WDK installed"
+      shell: powershell
+
     - name: Build Driver
       run: |
-        msbuild nvvad86v.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0
+        set "WDKContentRoot=C:\Program Files (x86)\Windows Kits\10\"
+        msbuild nvvad86v.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:KernelModeDriver=true
       shell: cmd
 
     - name: Upload artifact
