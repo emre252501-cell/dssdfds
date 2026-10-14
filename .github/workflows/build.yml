@@ -1,0 +1,40 @@
+name: Build WDM Driver
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install WDK
+      run: |
+        choco install windows-driver-kit --yes
+      shell: powershell
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Create Driver Project
+      run: |
+        mkdir driver_project
+        copy hypervisor.c driver_project\
+        copy driver_entry.c driver_project\
+        copy vmlaunch_stub.asm driver_project\
+      shell: cmd
+
+    - name: Build Driver
+      run: |
+        msbuild driver_project\nvvad86v.vcxproj /p:Configuration=Release /p:Platform=x64
+      shell: cmd
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nvvad86v
+        path: driver_project\x64\Release\nvvad86v.sys
