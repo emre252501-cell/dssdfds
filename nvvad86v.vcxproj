@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+    <TargetName>nvvad86v</TargetName>
+    <DriverType>WDM</DriverType>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Driver</ConfigurationType>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
+    <DriverType>WDM</DriverType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)x64\Release\</OutDir>
+    <IntDir>$(SolutionDir)x64\Release\obj\</IntDir>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Native</SubSystem>
+      <EntryPointSymbol>DriverEntry</EntryPointSymbol>
+    </Link>
+    <MASM>
+      <UseSafeExceptionHandlers>true</UseSafeExceptionHandlers>
+    </MASM>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClCompile Include="driver_entry.c"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <MASM Include="vmlaunch_stub.asm"/>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(KMDF_INC_PATH)\..\..\build\$(WDKContentRoot)build\$(DDK_TARGET_OS)\$(DDKBUILDENV)\$(DDK_TARGET_ARCH)\ntoskrnl.lib" Condition="Exists('$(KMDF_INC_PATH)')"/>
+  </ImportGroup>
+</Project>
